@@ -1,0 +1,37 @@
+#!/usr/bin/env node
+
+var request = require('request'); 
+var mysql = require('mysql');
+
+function Talk(msg){
+    request({
+	url:
+	'https://hooks.slack.com/services/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',
+	method : 'POST',
+	headers: {
+	    'Contain-type': 'application/json',
+	    },
+	    json: {
+		text: msg
+	    }
+	},function(error, res, body){
+	    console.log(body);
+	});
+}
+
+var connection = mysql.createConnection({
+    host: 'localhost',
+    user: 'root',
+    password: '',
+    database: 'time-table'
+});
+
+connection.connect(function(err) {
+   if (err) throw err;
+   connection.query("SELECT * FROM `time-table` WHERE thu=2",function (err, result, field){
+	if (err) throw err;
+	Talk(JSON.stringify(result[0]));
+//	Talk(result.RowDataPacket.toString());
+   }); 
+   console.log('Ok connect roi');
+});
