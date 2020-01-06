@@ -1,12 +1,47 @@
 #!/usr/bin/env node
 
+var moment = require('moment');
 var request = require('request'); 
 var mysql = require('mysql');
+
+moment().format();
+
+var monday = 'SELECT * FROM `time-table` WHERE thu=2';
+var tuesday = 'SELECT * FROM `time-table` WHERE thu=3';
+var wednesday= 'SELECT * FROM `time-table` WHERE thu=4';
+var thursday= 'SELECT * FROM `time-table` WHERE thu=5';
+var friday = 'SELECT * FROM `time-table` WHERE thu=6';
+var saturday = 'SELECT * FROM `time-table` WHERE thu=7';
+var sunday = 'SELECT * FROM `time-table` WHERE thu=CN';
+
+
+var today = moment.weekdays(moment().day());
+var queryString = ''
+if(today == 'Monday')
+    queryString = monday
+else if(today == 'Tuesday')
+    queryString = tuesday
+else if(today == 'Wednesday')
+    queryString = wednesday
+else if(today == 'Thursday')
+    queryString = thursday
+else if(today == 'Friday')
+    queryString = friday
+else if(today == 'Saturday')
+    queryString = saturday
+else queryString = sunday;
+
+function parseObj(obj){
+    let _res = `Lich thu ${obj.thu}:\n${obj.tiet1}\n${obj.tiet2}\n${obj.tiet3}\n${obj.tiet4}\n---\n${obj.tiet5}\n${obj.tiet6}\n${obj.tiet7}\n${obj.tiet8}`;  
+    return _res;
+}
+
 
 function Talk(msg){
     request({
 	url:
-	'https://hooks.slack.com/services/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',
+//	'https://hooks.slack.com/services/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',
+	'https://hooks.slack.com/services/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',
 	method : 'POST',
 	headers: {
 	    'Contain-type': 'application/json',
@@ -15,7 +50,6 @@ function Talk(msg){
 		text: msg
 	    }
 	},function(error, res, body){
-	    console.log(body);
 	});
 }
 
@@ -28,10 +62,10 @@ var connection = mysql.createConnection({
 
 connection.connect(function(err) {
    if (err) throw err;
-   connection.query("SELECT * FROM `time-table` WHERE thu=2",function (err, result, field){
+   connection.query(queryString,function (err, result, field){
 	if (err) throw err;
-	Talk(JSON.stringify(result[0]));
-//	Talk(result.RowDataPacket.toString());
+	res = parseObj(result[0]);
+	Talk(res);
+	connection.end();
    }); 
-   console.log('Ok connect roi');
 });
