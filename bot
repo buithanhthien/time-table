@@ -1,5 +1,4 @@
 #!/usr/bin/env node
-
 var moment = require('moment');
 var request = require('request'); 
 var mysql = require('mysql');
@@ -14,25 +13,77 @@ var friday = 'SELECT * FROM `time-table` WHERE thu=6';
 var saturday = 'SELECT * FROM `time-table` WHERE thu=7';
 var sunday = 'SELECT * FROM `time-table` WHERE thu=CN';
 
+alert_time = moment('16:00','h:mm');
 
 var today = moment.weekdays(moment().day());
 var queryString = ''
 if(today == 'Monday')
-    queryString = monday
+    if (moment() < alert_time)
+	queryString = monday
+    else
+	queryString = tuesday
 else if(today == 'Tuesday')
-    queryString = tuesday
+    if (moment() < alert_time)
+	queryString = tuesday
+    else
+	queryString = wednesday
 else if(today == 'Wednesday')
-    queryString = wednesday
+    if (moment() < alert_time)
+	queryString = wednesday
+    else
+	queryString = thursday
 else if(today == 'Thursday')
-    queryString = thursday
+    if (moment() < alert_time)
+	queryString = thursday
+    else
+	queryString = friday
 else if(today == 'Friday')
-    queryString = friday
+    if (moment() < alert_time)
+	queryString = friday
+    else
+	queryString = saturday
 else if(today == 'Saturday')
-    queryString = saturday
-else queryString = sunday;
+    if (moment() < alert_time)
+	queryString = saturday
+    else
+	queryString = sunday
+else
+    if (moment() < alert_time)
+	queryString = sunday
+    else
+	queryString = monday
 
 function parseObj(obj){
-    let _res = `Lich thu ${obj.thu}:\n${obj.tiet1}\n${obj.tiet2}\n${obj.tiet3}\n${obj.tiet4}\n---\n${obj.tiet5}\n${obj.tiet6}\n${obj.tiet7}\n${obj.tiet8}`;  
+    if(!obj.tiet1)
+	obj.tiet1 = ''
+    if(!obj.tiet2)
+	obj.tiet2 = ''
+    if(!obj.tiet3)
+	obj.tiet3 = ''
+    if(!obj.tiet4)
+	obj.tiet4 = ''
+    if(!obj.tiet5)
+	obj.tiet5 = ''
+    if(!obj.tiet6)
+	obj.tiet6 = ''
+    if(!obj.tiet7)
+	obj.tiet7 = ''
+    if(!obj.tiet8)
+	obj.tiet8 = ''
+    let _res = `
+    ----------------------
+    | Lich thu ${obj.thu}:
+    | ${obj.tiet1}
+    | ${obj.tiet2}
+    | ${obj.tiet3}
+    | ${obj.tiet4}
+    ----------------------
+    | ${obj.tiet5}
+    | ${obj.tiet6}
+    | ${obj.tiet7}
+    | ${obj.tiet8}
+    ----------------------
+    `;  
     return _res;
 }
 
@@ -41,16 +92,20 @@ function Talk(msg){
     request({
 	url:
 //	'https://hooks.slack.com/services/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',
-	'https://hooks.slack.com/services/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',
+	'https://slack.com/api/chat.postMessage',
 	method : 'POST',
 	headers: {
 	    'Contain-type': 'application/json',
+	    'Authorization': 'Bearer xoxb-880939714258-885480425185-dSLaCyVFiCVcs47iTVN5EQYE',
+
 	    },
 	    json: {
+		token: 'xoxb-880939714258-885480425185-dSLaCyVFiCVcs47iTVN5EQYE',
+		channel: 'learning',
 		text: msg
 	    }
 	},function(error, res, body){
-	});
+    });
 }
 
 var connection = mysql.createConnection({
@@ -66,6 +121,9 @@ connection.connect(function(err) {
 	if (err) throw err;
 	res = parseObj(result[0]);
 	Talk(res);
+	console.log(res);
 	connection.end();
    }); 
 });
+
+//something
